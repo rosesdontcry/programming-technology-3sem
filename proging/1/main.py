@@ -61,6 +61,8 @@ def main():
 
     while True:
         print_pairs(results)
+        plot_pair(results[0][1], results[0][2], results[0][3])
+
 
         print(f"id pairs = visual\n"
               f"n - add new pair\n"
@@ -77,6 +79,7 @@ def main():
             print_pairs(results)
 
         elif choice.isdigit():
+
             os.system('cls')
             continue
 
