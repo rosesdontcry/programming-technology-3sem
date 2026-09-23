@@ -21,3 +21,7 @@ out/
 .DS_Store
 Thumbs.db
 "@ | Out-File -FilePath ".gitignore" -Encoding utf8
+.idea/
+*.iml
+.vscode/
+.DS_Store
