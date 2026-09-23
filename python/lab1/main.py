@@ -9,32 +9,29 @@ def read_write():
     pairs = read_input()
     results = []
 
-    for pair_id, a, b, in pairs:
+    for pair_id, a, b in pairs:
         intersects = intersect(a, b)
-        results.append((pair_id, a, b, intersects, "0"))
+        intersection = find_intersection(a,b) if intersects else None
+        results.append((pair_id, a, b, intersects, intersection))
 
     write_output(results)
     return results
 
 
 def print_pairs(results):
-    print(f"{'id':<4}{'A1':<15}{'A2':<15}{'B1':<15}{'B2':<15}{'insect':<22}")
+    print(f"{'id':<4}{'a1':<19}{'a2':<17}{'b1':<19}{'b2':<19}{'intersection':<22}")
 
     for pair_id, a, b, intersects, intersection, in results:
-        a1_str = f"({a.p1.x},{a.p1.y})"
-        a2_str = f"({a.p2.x},{a.p2.y})"
-        b1_str = f"({b.p1.x},{b.p1.y})"
-        b2_str = f"({b.p2.x},{b.p2.y})"
+        a1_str = f"{point_to_str(a.p1)}"
+        a2_str = f"{point_to_str(a.p2)}"
+        b1_str = f"{point_to_str(b.p1)}"
+        b2_str = f"{point_to_str(b.p2)}"
 
-        if not intersects:
-            result_str = "нет"
-        elif intersection == '0':
-            result_str = f"точка (,)"
-        else:
-            result_str = f"отрезок (,)-(,)"
+        result_str = result_format(intersection)
 
-        print(f"{pair_id:<4}{a1_str:<15}{a2_str:<15}{b1_str:<15}{b2_str:<15}{result_str:<20}")
+        print(f"{pair_id:<4}{a1_str:<19}{a2_str:<19}{b1_str:<19}{b2_str:<19}{result_str:<20}")
     print("\n\n")
+
 
 def input_new_pairs():
     try:
@@ -52,19 +49,17 @@ def input_new_pairs():
     existing_pairs = read_input()
     new_id = get_last_id(existing_pairs)
 
-    append_in_input(new_id, segment1, segment2)
+    add_new_pair(new_id, segment1, segment2)
     print(f"Пара №{new_id} добавлена.")
 
 
 def main():
     results = read_write()
+    os.system('cls')
 
     while True:
         print_pairs(results)
-        plot_pair(results[0][1], results[0][2], results[0][3])
-
-
-        print(f"id pairs = visual\n"
+        print(f"id pairs - visual\n"
               f"n - add new pair\n"
               f"e - exit\n")
 
@@ -79,13 +74,18 @@ def main():
             print_pairs(results)
 
         elif choice.isdigit():
+            pair_id = int(choice)
+            found = False
 
+            for pid, a, b, intersects, intersection in results:
+                if pid == pair_id:
+                    plot_pair(a, b, intersection)
+                    found = True
+                    break
             os.system('cls')
-            continue
 
         else:
             os.system('cls')
-
 
 
 if __name__ == "__main__":
