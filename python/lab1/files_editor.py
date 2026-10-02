@@ -3,6 +3,7 @@ from geometry import Point, Segment
 
 
 def point_to_float(point):
+    point = point.strip().strip('()')
     return Point(*map(float, point.split(';')))
 
 def format_number(num):
