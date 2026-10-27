@@ -1,20 +1,21 @@
 package calculator;
 
+import calculator.ui.CalculatorController;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class BinaryCalculator extends Application {
+
     @Override
     public void start(Stage primaryStage) {
-        Label label = new Label("Привет, JavaFX!");
-        StackPane root = new StackPane(label);
-        Scene scene = new Scene(root, 300, 200);
+        CalculatorController controller = new CalculatorController();
+        var scene = controller.buildScene();
+        scene.getStylesheets().add(getClass().getResource("/dark-theme.css").toExternalForm());
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Бинарный калькулятор");
+        primaryStage.setTitle("Какулятор");
+        primaryStage.setMinWidth(550);
+        primaryStage.setMinHeight(300);
         primaryStage.show();
     }
 

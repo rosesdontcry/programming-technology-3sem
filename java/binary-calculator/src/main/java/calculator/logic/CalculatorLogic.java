@@ -5,6 +5,7 @@ public final class CalculatorLogic {
 
     private static final int MAX_FRACTION_DIGITS = 15;
     private static final String DIGITS = "0123456789ABCDEF";
+    private static final double MAX_SAFE_INTEGER = 9_007_199_254_740_992.0;
 
     private CalculatorLogic() {
     }
@@ -80,18 +81,25 @@ public final class CalculatorLogic {
         boolean isNegative = numberString.startsWith("-");
         String unsignedString = isNegative ? numberString.substring(1) : numberString;
 
+        if (unsignedString.isEmpty()) {
+            throw new NumberFormatException("No digits found");
+        }
+
         String[] parts = unsignedString.toUpperCase().split("\\.", -1);
 
         if (parts.length > 2) {
             throw new NumberFormatException("Multiple decimal points");
         }
 
-        double wholePart = parts[0].isEmpty() ? 0 : parseWholePart(parts[0], base);
-        double fractionalValue = 0;
+        boolean hasWholeDigits = !parts[0].isEmpty();
+        boolean hasFractionalDigits = parts.length > 1 && !parts[1].isEmpty();
 
-        if (parts.length > 1 && !parts[1].isEmpty()) {
-            fractionalValue = parseFractionalPart(parts[1], base);
+        if (!hasWholeDigits && !hasFractionalDigits) {
+            throw new NumberFormatException("No digits found");
         }
+
+        double wholePart = hasWholeDigits ? parseWholePart(parts[0], base) : 0;
+        double fractionalValue = hasFractionalDigits ? parseFractionalPart(parts[1], base) : 0;
 
         double result = wholePart + fractionalValue;
         return isNegative ? -result : result;
@@ -99,6 +107,10 @@ public final class CalculatorLogic {
 
     public static String toStringInBase(double number, int base) {
         validateBase(base);
+
+        if (Math.abs(number) > MAX_SAFE_INTEGER) {
+            throw new ArithmeticException("Number too large to represent precisely: " + number);
+        }
 
         boolean isNegative = number < 0;
         number = Math.abs(number);
