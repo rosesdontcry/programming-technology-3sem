@@ -19,3 +19,13 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# ML — датасеты и веса (хранятся отдельно, не в git)
+datasets/
+runs/
+*.pt
+*.pth
+
+# Кэши ultralytics/разметки
+*.cache
+labels.cache
