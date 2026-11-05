@@ -71,24 +71,17 @@
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
     -fx-font-size: 14px;
+    -fx-pref-height: 35px;
+    -fx-pref-width: 200px;
+    -fx-min-width: 80px;
+    -fx-max-width: 1000000px;
 }
 
 .number-field:focused {
     -fx-border-color: #5a8dee;
 }
 
-.section-label, .precision-legend, .approximation-indicator {
-    -fx-text-fill: #bfc5cc;
-}
-
 .section-label {
+    -fx-text-fill: #bfc5cc;
     -fx-font-size: 12px;
-}
-
-.precision-legend {
-    -fx-font-size: 11px;
-}
-
-.approximation-indicator {
-    -fx-font-size: 15px;
 }
