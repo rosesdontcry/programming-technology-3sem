@@ -144,6 +144,14 @@ class CalculatorControllerTest {
             screen.first.converted.setText("1");
             screen.second.converted.setText("2");
             assertEquals("-1", screen.result.converted.getText());
+
+            screen.first.converted.setText("2");
+            screen.second.converted.setText("1024.5");
+            screen.select("^");
+            assertEquals("", screen.result.converted.getText());
+            screen.second.converted.setText("0.5");
+            assertTrue(screen.result.converted.getText().startsWith("1.414213562373"));
+            assertTrue(screen.result.convertedApproximation.isVisible());
             return null;
         });
     }
@@ -180,6 +188,9 @@ class CalculatorControllerTest {
             Screen screen = new Screen();
             screen.first.converted.setText("5.625");
             screen.second.converted.setText("2.5");
+            assertFalse(screen.first.base.isDisabled());
+            assertFalse(screen.second.base.isDisabled());
+            assertFalse(screen.result.base.isDisabled());
             screen.first.base.setValue(16);
             assertEquals("5.A", screen.first.converted.getText());
             assertEquals("8.125", screen.result.converted.getText());
@@ -190,24 +201,7 @@ class CalculatorControllerTest {
     }
 
     @Test
-    void fontResizesWhenTheFieldWidthChanges() throws Exception {
-        onFxThread(() -> {
-            TextField field = new TextField();
-            AutoResizeFontHelper.applyAutoResize(field);
-            field.resize(150, 35);
-            field.setText("1234567890".repeat(8));
-            double narrowFont = field.getFont().getSize();
-            assertTrue(narrowFont < 14, "Long text should use a smaller font");
-
-            field.resize(2000, 35);
-            assertTrue(field.getFont().getSize() > narrowFont, "A wider field should restore the font size");
-            assertEquals(14, field.getFont().getSize());
-            return null;
-        });
-    }
-
-    @Test
-    void resizedFontSurvivesTheApplicationStylesheet() throws Exception {
+    void longNumbersKeepTheFixedFontSize() throws Exception {
         onFxThread(() -> {
             Stage stage = new Stage();
             try {
@@ -216,13 +210,22 @@ class CalculatorControllerTest {
                 root.applyCss();
                 root.layout();
                 Row first = new Row((VBox) root.getChildren().get(0));
-                first.binary.setText("1".repeat(120));
-                double resizedFont = first.binary.getFont().getSize();
-                assertTrue(resizedFont < 14, "Long text should use a smaller font");
+                Row second = new Row((VBox) root.getChildren().get(2));
+                Row result = new Row((VBox) root.getChildren().get(4));
+                assertEquals(14, first.binary.getFont().getSize());
+                second.converted.setText("0");
+                String longBinary = "0." + "0".repeat(85) + "1";
+                first.binary.setText(longBinary);
+                assertEquals(longBinary, result.binary.getText());
 
                 root.applyCss();
                 root.layout();
-                assertEquals(resizedFont, first.binary.getFont().getSize());
+                assertEquals(14, first.binary.getFont().getSize());
+                assertEquals(14, result.binary.getFont().getSize());
+                first.binary.positionCaret(first.binary.getLength());
+                result.binary.positionCaret(result.binary.getLength());
+                assertEquals(first.binary.getLength(), first.binary.getCaretPosition());
+                assertEquals(result.binary.getLength(), result.binary.getCaretPosition());
             } finally {
                 stage.close();
             }

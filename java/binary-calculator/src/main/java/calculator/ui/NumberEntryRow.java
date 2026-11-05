@@ -41,8 +41,6 @@ public class NumberEntryRow {
         setupBaseSelector();
         setupFormatters();
         setupListeners();
-        AutoResizeFontHelper.applyAutoResize(binaryField);
-        AutoResizeFontHelper.applyAutoResize(convertedField);
     }
 
     private static void configureField(TextField field, String prompt) {
@@ -229,11 +227,6 @@ public class NumberEntryRow {
         return currentValue;
     }
 
-    /** Retains the original accessor for callers using doubles. */
-    public double getValue() {
-        return currentValue == null ? 0 : CalculatorLogic.toDouble(currentValue);
-    }
-
     public void setValue(ExactNumber value) {
         // Prepare both strings before modifying the displayed or stored state.
         FormattedNumber binary = CalculatorLogic.format(value, 2);
@@ -246,10 +239,6 @@ public class NumberEntryRow {
         });
         currentValue = value;
         valid = true;
-    }
-
-    public void setValue(double value) {
-        setValue(CalculatorLogic.fromDouble(value));
     }
 
     public void clear() {
@@ -266,10 +255,6 @@ public class NumberEntryRow {
     public void setFieldsEditable(boolean editable) {
         binaryField.setEditable(editable);
         convertedField.setEditable(editable);
-    }
-
-    public void setBaseSelectable(boolean selectable) {
-        baseSelector.setDisable(!selectable);
     }
 
     public HBox getView() {

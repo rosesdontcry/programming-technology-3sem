@@ -21,7 +21,6 @@ public class CalculatorController {
 
     public CalculatorController() {
         resultRow.setFieldsEditable(false);
-        resultRow.setBaseSelectable(true);
         number1Row.setOnChange(this::recalculate);
         number2Row.setOnChange(this::recalculate);
     }

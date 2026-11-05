@@ -49,7 +49,6 @@ class CalculatorLogicTest {
         assertEquals("0.3", decimalText(CalculatorLogic.add(decimal("0.1"), decimal("0.2"))));
         assertEquals("0.02", decimalText(CalculatorLogic.multiply(decimal("0.1"), decimal("0.2"))));
         assertEquals("0.125", decimalText(CalculatorLogic.divide(decimal("1"), decimal("8"))));
-        assertEquals(0.1, CalculatorLogic.subtract(0.8, 0.7));
     }
 
     @Test
@@ -109,6 +108,10 @@ class CalculatorLogicTest {
         assertEquals("-1", decimalText(CalculatorLogic.power(decimal("-1"), decimal("9007199254740991"))));
         assertThrows(ArithmeticException.class, () -> CalculatorLogic.power(decimal("0"), decimal("-1")));
         assertThrows(ArithmeticException.class, () -> CalculatorLogic.power(decimal("-2"), decimal("0.5")));
+        FormattedNumber fractionalPower = CalculatorLogic.format(
+                CalculatorLogic.power(decimal("2"), decimal("0.5")), 10);
+        assertTrue(fractionalPower.approximate());
+        assertTrue(fractionalPower.text().startsWith("1.414213562373"));
     }
 
     @Test
@@ -144,10 +147,10 @@ class CalculatorLogicTest {
     }
 
     @Test
-    void rejectsDivisionByZeroAndNonFiniteDoubleValues() {
+    void rejectsDivisionByZeroAndUnrepresentableApproximateResults() {
         assertThrows(ArithmeticException.class, () -> CalculatorLogic.divide(decimal("1"), decimal("0")));
-        assertThrows(ArithmeticException.class, () -> CalculatorLogic.toStringInBase(Double.NaN, 10));
-        assertThrows(ArithmeticException.class, () -> CalculatorLogic.toStringInBase(Double.POSITIVE_INFINITY, 10));
+        assertThrows(ArithmeticException.class, () -> CalculatorLogic.power(decimal("2"), decimal("1024.5")));
+        assertThrows(ArithmeticException.class, () -> CalculatorLogic.power(decimal("0.5"), decimal("1200.5")));
     }
 
     @Test
@@ -184,14 +187,5 @@ class CalculatorLogicTest {
                         "Rounding error exceeded half a displayed digit: " + formatted.text());
             }
         }
-    }
-
-    @Test
-    void preservesTheOriginalDoubleBasedEntryPoints() {
-        assertEquals(5.625, CalculatorLogic.parseNumber("101.101", 2));
-        assertEquals("101.101", CalculatorLogic.toStringInBase(5.625, 2));
-        assertEquals(-2.0, CalculatorLogic.mod(-5.0, 3.0));
-        assertEquals(-2.0, CalculatorLogic.root(3.0, -8.0));
-        assertEquals(1.0, CalculatorLogic.power(0.0, 0.0));
     }
 }

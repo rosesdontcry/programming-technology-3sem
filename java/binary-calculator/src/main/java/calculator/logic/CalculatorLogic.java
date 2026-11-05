@@ -328,23 +328,16 @@ public final class CalculatorLogic {
         if (!Double.isFinite(value) || (rejectUnderflow && value == 0.0)) {
             throw new ArithmeticException("Result is outside the supported range");
         }
-        return fromDecimal(BigDecimal.valueOf(value), true);
+        return fromDecimal(BigDecimal.valueOf(value));
     }
 
-    private static ExactNumber fromDecimal(BigDecimal value, boolean approximate) {
+    private static ExactNumber fromDecimal(BigDecimal value) {
         BigInteger numerator = value.unscaledValue();
         int scale = value.scale();
         if (scale < 0) {
-            return checked(numerator.multiply(BigInteger.TEN.pow(-scale)), BigInteger.ONE, approximate);
+            return checked(numerator.multiply(BigInteger.TEN.pow(-scale)), BigInteger.ONE, true);
         }
-        return checked(numerator, BigInteger.TEN.pow(scale), approximate);
-    }
-
-    public static ExactNumber fromDouble(double value) {
-        if (!Double.isFinite(value)) {
-            throw new ArithmeticException("Non-finite number");
-        }
-        return fromDecimal(BigDecimal.valueOf(value), false);
+        return checked(numerator, BigInteger.TEN.pow(scale), true);
     }
 
     private static double toFiniteDouble(ExactNumber value) {
@@ -355,50 +348,9 @@ public final class CalculatorLogic {
         return result;
     }
 
-    public static double toDouble(ExactNumber value) {
-        return toFiniteDouble(value);
-    }
-
     private static void validateBase(int base) {
         if (base != 2 && base != 8 && base != 10 && base != 16) {
             throw new IllegalArgumentException("Unsupported base: " + base);
         }
-    }
-
-    // Compatibility overloads for callers of the original double-based API.
-    public static double add(double a, double b) {
-        return toFiniteDouble(add(fromDouble(a), fromDouble(b)));
-    }
-
-    public static double subtract(double a, double b) {
-        return toFiniteDouble(subtract(fromDouble(a), fromDouble(b)));
-    }
-
-    public static double multiply(double a, double b) {
-        return toFiniteDouble(multiply(fromDouble(a), fromDouble(b)));
-    }
-
-    public static double divide(double a, double b) {
-        return toFiniteDouble(divide(fromDouble(a), fromDouble(b)));
-    }
-
-    public static double mod(double a, double b) {
-        return toFiniteDouble(mod(fromDouble(a), fromDouble(b)));
-    }
-
-    public static double power(double base, double exponent) {
-        return toFiniteDouble(power(fromDouble(base), fromDouble(exponent)));
-    }
-
-    public static double root(double degree, double number) {
-        return toFiniteDouble(root(fromDouble(degree), fromDouble(number)));
-    }
-
-    public static double parseNumber(String numberString, int base) {
-        return toFiniteDouble(parseExact(numberString, base));
-    }
-
-    public static String toStringInBase(double number, int base) {
-        return format(fromDouble(number), base).text();
     }
 }

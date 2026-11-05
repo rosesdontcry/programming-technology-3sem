@@ -53,10 +53,6 @@
     -fx-padding: 6px 12px;
 }
 
-.combo-box:disabled {
-    -fx-opacity: 0.5;
-}
-
 .combo-box-popup .list-cell:hover {
     -fx-background-color: #5a8dee;
     -fx-text-fill: white;
@@ -74,6 +70,7 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
+    -fx-font-size: 14px;
 }
 
 .number-field:focused {

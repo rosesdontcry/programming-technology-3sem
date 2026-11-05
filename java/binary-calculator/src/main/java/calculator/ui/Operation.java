@@ -58,9 +58,4 @@ public enum Operation {
     }
 
     public abstract ExactNumber apply(ExactNumber a, ExactNumber b);
-
-    /** Retains the original public API for callers using doubles. */
-    public double apply(double a, double b) {
-        return CalculatorLogic.toDouble(apply(CalculatorLogic.fromDouble(a), CalculatorLogic.fromDouble(b)));
-    }
 }
