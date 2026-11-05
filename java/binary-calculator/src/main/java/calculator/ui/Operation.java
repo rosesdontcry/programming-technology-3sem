@@ -1,47 +1,48 @@
 package calculator.ui;
 
 import calculator.logic.CalculatorLogic;
+import calculator.logic.ExactNumber;
 
 public enum Operation {
     ADD("+") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.add(a, b);
         }
     },
     SUBTRACT("−") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.subtract(a, b);
         }
     },
     MULTIPLY("×") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.multiply(a, b);
         }
     },
     DIVIDE("÷") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.divide(a, b);
         }
     },
     MOD("mod") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.mod(a, b);
         }
     },
     ROOT("√") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.root(a, b);
         }
     },
     POWER("^") {
         @Override
-        public double apply(double a, double b) {
+        public ExactNumber apply(ExactNumber a, ExactNumber b) {
             return CalculatorLogic.power(a, b);
         }
     };
@@ -56,5 +57,10 @@ public enum Operation {
         return symbol;
     }
 
-    public abstract double apply(double a, double b);
+    public abstract ExactNumber apply(ExactNumber a, ExactNumber b);
+
+    /** Retains the original public API for callers using doubles. */
+    public double apply(double a, double b) {
+        return CalculatorLogic.toDouble(apply(CalculatorLogic.fromDouble(a), CalculatorLogic.fromDouble(b)));
+    }
 }

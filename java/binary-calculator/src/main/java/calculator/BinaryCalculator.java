@@ -13,9 +13,9 @@ public class BinaryCalculator extends Application {
         scene.getStylesheets().add(getClass().getResource("/dark-theme.css").toExternalForm());
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Какулятор");
+        primaryStage.setTitle("Калькулятор");
         primaryStage.setMinWidth(550);
-        primaryStage.setMinHeight(300);
+        primaryStage.setMinHeight(350);
         primaryStage.show();
     }
 

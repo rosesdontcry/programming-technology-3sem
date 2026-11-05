@@ -38,15 +38,10 @@
     -fx-font-size: 14px;
 }
 
-
 .combo-box .list-cell {
     -fx-background-color: #3c3f41;
     -fx-text-fill: #e0e0e0;
     -fx-padding: 4px 10px;
-}
-
-.combo-box-popup .list-view {
-    -fx-background-color: #3c3f41;
 }
 
 .combo-box-popup .list-view {
@@ -79,17 +74,24 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
-    -fx-font-size: 14px;
 }
 
 .number-field:focused {
     -fx-border-color: #5a8dee;
 }
 
-.number-field.error {
-    -fx-border-color: #ff6b6b;
+.section-label, .precision-legend, .approximation-indicator {
+    -fx-text-fill: #bfc5cc;
 }
 
-.number-field.error:focused {
-    -fx-border-color: #ff6b6b;
+.section-label {
+    -fx-font-size: 12px;
+}
+
+.precision-legend {
+    -fx-font-size: 11px;
+}
+
+.approximation-indicator {
+    -fx-font-size: 15px;
 }

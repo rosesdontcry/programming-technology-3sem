@@ -1,38 +1,42 @@
 package calculator.ui;
 
 import calculator.logic.CalculatorLogic;
+import calculator.logic.CalculatorLogic.FormattedNumber;
+import calculator.logic.ExactNumber;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public class NumberEntryRow {
-
-    private static final String FIELD_STYLE_CLASS = "number-field";
-    private static final String ERROR_STYLE_CLASS = "error";
+    private static final int MAX_CONTROL_LENGTH = CalculatorLogic.MAX_FORMATTED_FRACTION_DIGITS + 66;
 
     private final TextField binaryField = new TextField();
     private final TextField convertedField = new TextField();
     private final ComboBox<Integer> baseSelector = new ComboBox<>();
+    private final Label binaryApproximation = createApproximationLabel();
+    private final Label convertedApproximation = createApproximationLabel();
+    private final HBox view = new HBox(6, binaryApproximation, binaryField,
+            convertedApproximation, convertedField, baseSelector);
 
-    private boolean isSyncing = false;
-    private boolean valid = false;
-    private double currentValue = 0;
+    private boolean isSyncing;
+    private boolean valid;
+    private ExactNumber currentValue;
     private Runnable onChangeCallback;
 
     public NumberEntryRow() {
-        binaryField.getStyleClass().add(FIELD_STYLE_CLASS);
-        convertedField.getStyleClass().add(FIELD_STYLE_CLASS);
-        binaryField.setPrefHeight(35);
-        convertedField.setPrefHeight(35);
-        binaryField.setPrefWidth(200);
-        convertedField.setPrefWidth(200);
-        binaryField.setMinWidth(200);
-        convertedField.setMinWidth(200);
+        configureField(binaryField, "Двоичное число");
+        configureField(convertedField, "Число в выбранной системе");
+        HBox.setHgrow(binaryField, Priority.ALWAYS);
+        HBox.setHgrow(convertedField, Priority.ALWAYS);
+        view.setPadding(new Insets(2));
 
         setupBaseSelector();
         setupFormatters();
@@ -41,12 +45,35 @@ public class NumberEntryRow {
         AutoResizeFontHelper.applyAutoResize(convertedField);
     }
 
-    // === Инициализация ===
+    private static void configureField(TextField field, String prompt) {
+        field.getStyleClass().add("number-field");
+        field.setPromptText(prompt);
+        field.setAccessibleText(prompt);
+        field.setPrefHeight(35);
+        field.setPrefWidth(200);
+        field.setMinWidth(80);
+        field.setMaxWidth(Double.MAX_VALUE);
+    }
+
+    private static Label createApproximationLabel() {
+        Label label = new Label("≈");
+        label.getStyleClass().add("approximation-indicator");
+        label.setTooltip(new Tooltip("Приближённое представление числа"));
+        setApproximation(label, false);
+        return label;
+    }
 
     private void setupBaseSelector() {
         baseSelector.getItems().addAll(2, 8, 10, 16);
         baseSelector.setValue(10);
-        baseSelector.valueProperty().addListener((obs, oldBase, newBase) -> onBaseChanged());
+        baseSelector.setAccessibleText("Основание системы счисления второго поля");
+        baseSelector.valueProperty().addListener((obs, oldBase, newBase) -> {
+            if (newBase == null) {
+                baseSelector.setValue(oldBase);
+            } else {
+                onBaseChanged();
+            }
+        });
     }
 
     private void setupFormatters() {
@@ -56,25 +83,34 @@ public class NumberEntryRow {
 
     private void setupListeners() {
         binaryField.textProperty().addListener((obs, oldText, newText) -> {
-            if (isSyncing) {
-                return;
+            if (!isSyncing) {
+                handleChanged(oldText, newText, binaryApproximation, convertedField,
+                        convertedApproximation, 2, baseSelector.getValue());
             }
-            handleBinaryChanged(newText);
         });
-
         convertedField.textProperty().addListener((obs, oldText, newText) -> {
-            if (isSyncing) {
-                return;
+            if (!isSyncing) {
+                handleChanged(oldText, newText, convertedApproximation, binaryField,
+                        binaryApproximation, baseSelector.getValue(), 2);
             }
-            handleConvertedChanged(newText);
         });
     }
-
-    // === Блокировка недопустимых символов ===
 
     private UnaryOperator<TextFormatter.Change> createFilter(Supplier<Integer> baseSupplier) {
         return change -> {
             String newText = change.getControlNewText();
+            if (newText.length() > MAX_CONTROL_LENGTH) {
+                // Keep one excess character so parsing invalidates the row instead of
+                // silently rejecting a paste and leaving an old result on screen.
+                String clipped = newText.substring(0, MAX_CONTROL_LENGTH + 1);
+                if (!isValidPartialInput(clipped, baseSupplier.get())) {
+                    return null;
+                }
+                change.setRange(0, change.getControlText().length());
+                change.setText(clipped);
+                change.selectRange(clipped.length(), clipped.length());
+                return change;
+            }
             if (newText.isEmpty() || isValidPartialInput(newText, baseSupplier.get())) {
                 return change;
             }
@@ -83,11 +119,7 @@ public class NumberEntryRow {
     }
 
     private boolean isValidPartialInput(String text, int base) {
-        int index = 0;
-        if (text.charAt(0) == '-') {
-            index = 1;
-        }
-
+        int index = text.charAt(0) == '-' ? 1 : 0;
         boolean dotSeen = false;
         for (int i = index; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -96,89 +128,91 @@ public class NumberEntryRow {
                     return false;
                 }
                 dotSeen = true;
-                continue;
-            }
-            if (!CalculatorLogic.isValidDigitForBase(c, base)) {
+            } else if (!CalculatorLogic.isValidDigitForBase(c, base)) {
                 return false;
             }
         }
         return true;
     }
 
-    private void handleBinaryChanged(String newText) {
-        try {
-            double value = CalculatorLogic.parseNumber(newText, 2);
-            currentValue = value;
-            valid = true;
-            clearErrorStyle(binaryField);
-
-            isSyncing = true;
-            convertedField.setText(CalculatorLogic.toStringInBase(value, baseSelector.getValue()));
-            clearErrorStyle(convertedField);
-            isSyncing = false;
-
-        } catch (NumberFormatException e) {
-            valid = false;
-            applyErrorStyle(binaryField);
-
-            isSyncing = true;
-            convertedField.clear();
-            isSyncing = false;
+    private void handleChanged(String oldText, String newText, Label sourceApproximation,
+                               TextField target, Label targetApproximation, int sourceBase, int targetBase) {
+        // Adding or removing trailing zeroes from an approximate display must not change
+        // the more precise value that was originally entered in the other field.
+        if (valid && sourceApproximation.isVisible()
+                && CalculatorLogic.sameDisplayedValue(oldText, newText, sourceBase)) {
+            notifyChange();
+            return;
         }
 
-        notifyChange();
-    }
-
-    private void handleConvertedChanged(String newText) {
-        int base = baseSelector.getValue();
+        valid = false;
+        currentValue = null;
         try {
-            double value = CalculatorLogic.parseNumber(newText, base);
+            ExactNumber value = CalculatorLogic.parseExact(newText, sourceBase);
+            FormattedNumber converted = CalculatorLogic.format(value, targetBase);
+            sync(() -> {
+                target.setText(converted.text());
+                setApproximation(sourceApproximation, false);
+                setApproximation(targetApproximation, converted.approximate());
+            });
             currentValue = value;
             valid = true;
-            clearErrorStyle(convertedField);
-
-            isSyncing = true;
-            binaryField.setText(CalculatorLogic.toStringInBase(value, 2));
-            clearErrorStyle(binaryField);
-            isSyncing = false;
-
-        } catch (NumberFormatException e) {
-            valid = false;
-            applyErrorStyle(convertedField);
-
-            isSyncing = true;
-            binaryField.clear();
-            isSyncing = false;
+        } catch (IllegalArgumentException | ArithmeticException ignored) {
+            // Invalid input and out-of-range values leave the result blank, without an error message.
+        } finally {
+            if (!valid) {
+                sync(() -> {
+                    target.clear();
+                    setApproximation(sourceApproximation, false);
+                    setApproximation(targetApproximation, false);
+                });
+            }
+            notifyChange();
         }
-
-        notifyChange();
     }
 
     private void onBaseChanged() {
-        if (valid) {
-            isSyncing = true;
-            convertedField.setText(CalculatorLogic.toStringInBase(currentValue, baseSelector.getValue()));
-            clearErrorStyle(convertedField);
-            isSyncing = false;
-        } else {
-            isSyncing = true;
-            convertedField.clear();
-            isSyncing = false;
+        if (!valid) {
+            sync(() -> {
+                convertedField.clear();
+                setApproximation(convertedApproximation, false);
+            });
+            return;
+        }
+        try {
+            FormattedNumber converted = CalculatorLogic.format(currentValue, baseSelector.getValue());
+            sync(() -> {
+                convertedField.setText(converted.text());
+                setApproximation(convertedApproximation, converted.approximate());
+            });
+        } catch (IllegalArgumentException | ArithmeticException ignored) {
+            valid = false;
+            currentValue = null;
+            sync(() -> {
+                convertedField.clear();
+                setApproximation(convertedApproximation, false);
+            });
+            notifyChange();
         }
     }
 
-    private static void applyErrorStyle(TextField field) {
-        if (!field.getStyleClass().contains(ERROR_STYLE_CLASS)) {
-            field.getStyleClass().add(ERROR_STYLE_CLASS);
+    private void sync(Runnable action) {
+        boolean previousSyncing = isSyncing;
+        isSyncing = true;
+        try {
+            action.run();
+        } finally {
+            isSyncing = previousSyncing;
         }
     }
 
-    private static void clearErrorStyle(TextField field) {
-        field.getStyleClass().remove(ERROR_STYLE_CLASS);
+    private static void setApproximation(Label label, boolean approximate) {
+        label.setVisible(approximate);
+        label.setManaged(approximate);
     }
 
     public void setOnChange(Runnable callback) {
-        this.onChangeCallback = callback;
+        onChangeCallback = callback;
     }
 
     private void notifyChange() {
@@ -191,32 +225,42 @@ public class NumberEntryRow {
         return valid;
     }
 
-    public double getValue() {
+    public ExactNumber getExactValue() {
         return currentValue;
     }
 
-    public void setValue(double value) {
-        valid = true;
-        currentValue = value;
+    /** Retains the original accessor for callers using doubles. */
+    public double getValue() {
+        return currentValue == null ? 0 : CalculatorLogic.toDouble(currentValue);
+    }
 
-        isSyncing = true;
-        binaryField.setText(CalculatorLogic.toStringInBase(value, 2));
-        convertedField.setText(CalculatorLogic.toStringInBase(value, baseSelector.getValue()));
-        clearErrorStyle(binaryField);
-        clearErrorStyle(convertedField);
-        isSyncing = false;
+    public void setValue(ExactNumber value) {
+        // Prepare both strings before modifying the displayed or stored state.
+        FormattedNumber binary = CalculatorLogic.format(value, 2);
+        FormattedNumber converted = CalculatorLogic.format(value, baseSelector.getValue());
+        sync(() -> {
+            binaryField.setText(binary.text());
+            convertedField.setText(converted.text());
+            setApproximation(binaryApproximation, binary.approximate());
+            setApproximation(convertedApproximation, converted.approximate());
+        });
+        currentValue = value;
+        valid = true;
+    }
+
+    public void setValue(double value) {
+        setValue(CalculatorLogic.fromDouble(value));
     }
 
     public void clear() {
         valid = false;
-        currentValue = 0;
-
-        isSyncing = true;
-        binaryField.clear();
-        convertedField.clear();
-        clearErrorStyle(binaryField);
-        clearErrorStyle(convertedField);
-        isSyncing = false;
+        currentValue = null;
+        sync(() -> {
+            binaryField.clear();
+            convertedField.clear();
+            setApproximation(binaryApproximation, false);
+            setApproximation(convertedApproximation, false);
+        });
     }
 
     public void setFieldsEditable(boolean editable) {
@@ -229,8 +273,6 @@ public class NumberEntryRow {
     }
 
     public HBox getView() {
-        HBox box = new HBox(10, binaryField, convertedField, baseSelector);
-        box.setPadding(new Insets(5));
-        return box;
+        return view;
     }
 }
