@@ -38,7 +38,6 @@
     -fx-font-size: 14px;
 }
 
-
 .combo-box .list-cell {
     -fx-background-color: #3c3f41;
     -fx-text-fill: #e0e0e0;
@@ -49,17 +48,9 @@
     -fx-background-color: #3c3f41;
 }
 
-.combo-box-popup .list-view {
-    -fx-background-color: #3c3f41;
-}
-
 .combo-box-popup .list-cell {
     -fx-font-size: 14px;
     -fx-padding: 6px 12px;
-}
-
-.combo-box:disabled {
-    -fx-opacity: 0.5;
 }
 
 .combo-box-popup .list-cell:hover {
@@ -80,16 +71,17 @@
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
     -fx-font-size: 14px;
+    -fx-pref-height: 35px;
+    -fx-pref-width: 200px;
+    -fx-min-width: 80px;
+    -fx-max-width: 1000000px;
 }
 
 .number-field:focused {
     -fx-border-color: #5a8dee;
 }
 
-.number-field.error {
-    -fx-border-color: #ff6b6b;
-}
-
-.number-field.error:focused {
-    -fx-border-color: #ff6b6b;
+.section-label {
+    -fx-text-fill: #bfc5cc;
+    -fx-font-size: 12px;
 }
