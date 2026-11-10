@@ -39,7 +39,7 @@ public class BinaryCalculator extends Application {
         }
         try {
             result.setValue(CalculatorLogic.calculate(first.getValue(), second.getValue(), operation));
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException | ArithmeticException e) {
         }
     }
 
@@ -47,7 +47,7 @@ public class BinaryCalculator extends Application {
     private HBox operationButtons() {
         HBox buttons = new HBox(6);
         ToggleGroup group = new ToggleGroup();
-        for (String symbol : new String[]{"+", "−", "×", "÷", "mod", "√", "^"}) {
+        for (String symbol : new String[]{"+", "-", "*", "/", "mod", "√", "^"}) {
             ToggleButton button = new ToggleButton(symbol);
             button.setToggleGroup(group);
             if (symbol.equals(operation)) {
