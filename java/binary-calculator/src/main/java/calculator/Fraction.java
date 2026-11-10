@@ -2,7 +2,6 @@ package calculator;
 
 import java.math.BigInteger;
 
-/** Число хранится как обыкновенная дробь: числитель / знаменатель. */
 final class Fraction {
     private static final BigInteger LIMIT = BigInteger.ONE.shiftLeft(53);
     final BigInteger numerator;

@@ -13,7 +13,7 @@ final class CalculatorLogic {
     private static final long MAX_POWER_BITS = 65536;
     private static final String DIGITS = "0123456789ABCDEF";
 
-    // Например, 101.01₂ = 10101₂ / 100₂ = 21 / 4.
+
     static Fraction parse(String text, int base) {
         checkBase(base);
         if (text == null || text.isEmpty()) {
@@ -39,7 +39,7 @@ final class CalculatorLogic {
         return new Fraction(numerator, BigInteger.valueOf(base).pow(places));
     }
 
-    // Делим целую часть, а затем по одной получаем цифры дробной части.
+
     static String format(Fraction number, int base) {
         checkBase(base);
         BigInteger[] parts = number.numerator.abs().divideAndRemainder(number.denominator);
@@ -144,8 +144,7 @@ final class CalculatorLogic {
         return fromDouble(Math.pow(toDouble(base), toDouble(exponent)));
     }
 
-    // Первое число — степень корня, второе — подкоренное число.
-    static Fraction root(Fraction degree, Fraction number) {
+    static Fraction root(Fraction number, Fraction degree) {
         if (degree.numerator.signum() == 0) {
             throw new ArithmeticException("Root degree is zero");
         }
@@ -182,7 +181,6 @@ final class CalculatorLogic {
         return fromDouble(negative ? -result : result);
     }
 
-    // Двоичным поиском проверяем, существует ли точный целый корень.
     private static BigInteger exactRoot(BigInteger value, int degree) {
         if (degree == 1 || value.equals(BigInteger.ZERO) || value.equals(BigInteger.ONE)) {
             return value;
@@ -222,7 +220,6 @@ final class CalculatorLogic {
         }
     }
 
-    // Дробные степени и нецелые корни рассчитываются через Math.pow.
     private static double toDouble(Fraction number) {
         double value = new BigDecimal(number.numerator)
                 .divide(new BigDecimal(number.denominator), MathContext.DECIMAL128).doubleValue();

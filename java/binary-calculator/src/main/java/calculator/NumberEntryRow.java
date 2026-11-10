@@ -55,7 +55,6 @@ final class NumberEntryRow extends VBox {
         field.setEditable(editable);
     }
 
-    // Допустимы минус в начале, цифры выбранной системы и одна точка.
     private TextFormatter<String> filter(boolean binaryField) {
         return new TextFormatter<>(change -> {
             String text = change.getControlNewText();
@@ -82,7 +81,7 @@ final class NumberEntryRow extends VBox {
         if (syncing) {
             return;
         }
-        // Дописанный ноль не должен заменять исходное число его округлённой записью.
+
         if (value != null && CalculatorLogic.keepsExactValue(value, oldText, newText, sourceBase)) {
             return;
         }
@@ -113,7 +112,7 @@ final class NumberEntryRow extends VBox {
         }
     }
 
-    // Не вызываем обработчики повторно, когда меняем второе поле программно.
+
     private void sync(Runnable action) {
         boolean wasSyncing = syncing;
         syncing = true;

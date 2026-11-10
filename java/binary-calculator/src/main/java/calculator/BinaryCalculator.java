@@ -31,7 +31,8 @@ public class BinaryCalculator extends Application {
     Scene buildScene() {
         first = new NumberEntryRow("Первое число", true, this::recalculate);
         second = new NumberEntryRow("Второе число", true, this::recalculate);
-        result = new NumberEntryRow("Результат", false, () -> {});
+        result = new NumberEntryRow("Результат", false, () -> {
+        });
         VBox root = new VBox(10, first, operationButtons(), second, new Separator(), result);
         root.setPadding(new Insets(16));
         return new Scene(root, 680, 380);
@@ -71,7 +72,6 @@ public class BinaryCalculator extends Application {
         try {
             result.setValue(CalculatorLogic.calculate(first.getValue(), second.getValue(), operation));
         } catch (IllegalArgumentException | ArithmeticException ignored) {
-            // Если посчитать или отобразить число нельзя, результат остаётся пустым.
         }
     }
 
