@@ -25,7 +25,7 @@ public class BinaryCalculator extends Application {
         stage.setScene(new Scene(root, 400, 200));
         binary.textProperty().addListener((observable, oldText, newText) -> {
             if (syncing) return;
-            syncing = true;               
+            syncing = true;
             try {
                 int number = Integer.parseInt(newText, 2);
                 decimal.setText(String.valueOf(number));
