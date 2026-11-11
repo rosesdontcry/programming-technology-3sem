@@ -92,7 +92,7 @@ public class CalculatorLogic {
             case "/" -> new Fraction(left, right);
             case "mod" -> new Fraction(left.remainder(right), commonDenominator);
             case "^" -> power(a, b);
-            case "√" -> root(b, a);
+            case "√" -> root(a, b);
             default -> throw new IllegalArgumentException("unknown operation");
         };
     }
